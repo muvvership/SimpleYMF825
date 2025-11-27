@@ -32,11 +32,7 @@ void setup()
     YMF825.setMasterVolume(32);
     YMF825.setVolume(0, 31);
 
-    pinMode(POT_PITCH, INPUT);
-    pinMode(POT_OCTAVE, INPUT);
-
-    // Start with a middle C
-    YMF825.keyon(0, 4, KEY_C, 31);
+    // Note: No pinMode needed for analog inputs
 }
 
 void loop()
@@ -48,6 +44,13 @@ void loop()
     // Map pot values to ranges
     int newPitch = map(potPitchValue, 0, 1023, 0, 11);  // 12 notes (0-11)
     int newOctave = map(potOctaveValue, 0, 1023, 1, 8); // Octaves 1-8
+
+    // Initialize on first run
+    if (currentPitch == -1) {
+        currentPitch = newPitch;
+        currentOctave = newOctave;
+        YMF825.keyon(0, currentOctave, currentPitch, 31);
+    }
 
     // Update note if pitch or octave changed
     if (newPitch != currentPitch || newOctave != currentOctave) {

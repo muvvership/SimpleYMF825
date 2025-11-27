@@ -47,11 +47,7 @@ void setup()
 
     YMF825.setMasterVolume(32);
 
-    pinMode(POT_TONE, INPUT);
-    pinMode(POT_VOLUME, INPUT);
-
-    // Start playing a note on channel 0
-    YMF825.keyon(0, 4, KEY_C, 15);
+    // Note: No pinMode needed for analog inputs
 }
 
 void loop()
@@ -64,6 +60,14 @@ void loop()
     int newTone = map(potToneValue, 0, 1023, 0, 15);     // 16 tones (0-15)
     int newVolume = map(potVolumeValue, 0, 1023, 0, 31); // Volume range (0-31)
 
+    // Initialize on first run
+    if (currentTone == -1) {
+        currentTone = newTone;
+        currentVolume = newVolume;
+        YMF825.setTone(0, currentTone);
+        YMF825.keyon(0, 4, KEY_C, currentVolume);
+    }
+
     // Update tone if changed
     if (newTone != currentTone) {
         currentTone = newTone;
@@ -71,7 +75,7 @@ void loop()
         YMF825.keyoff(0);
         delay(10);
         YMF825.setTone(0, currentTone);
-        YMF825.keyon(0, 4, KEY_C, currentVolume >= 0 ? currentVolume : 15);
+        YMF825.keyon(0, 4, KEY_C, currentVolume);
     }
 
     // Update volume if changed

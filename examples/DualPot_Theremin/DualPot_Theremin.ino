@@ -34,11 +34,7 @@ void setup()
     YMF825.setTone(0, SAW_LEAD);
     YMF825.setMasterVolume(32);
 
-    pinMode(POT_PITCH, INPUT);
-    pinMode(POT_VOLUME, INPUT);
-
-    // Start with a note
-    YMF825.keyon(0, 4, KEY_C, 15);
+    // Note: No pinMode needed for analog inputs
 }
 
 void loop()
@@ -58,6 +54,14 @@ void loop()
     // Map volume pot to volume range
     int newVolume = map(potVolumeValue, 0, 1023, 0, 31); // Volume 0-31
 
+    // Initialize on first run
+    if (currentOctave == -1) {
+        currentOctave = newOctave;
+        currentKey = newKey;
+        currentVolume = newVolume;
+        YMF825.keyon(0, currentOctave, currentKey, currentVolume);
+    }
+
     // Update pitch if changed
     if (newOctave != currentOctave || newKey != currentKey) {
         currentOctave = newOctave;
@@ -65,8 +69,8 @@ void loop()
 
         // Restart the note with new pitch
         YMF825.keyoff(0);
-        delay(5); // Shorter delay for smoother transitions
-        YMF825.keyon(0, currentOctave, currentKey, currentVolume >= 0 ? currentVolume : 15);
+        delay(10);
+        YMF825.keyon(0, currentOctave, currentKey, currentVolume);
     }
 
     // Update volume if changed
@@ -75,5 +79,5 @@ void loop()
         YMF825.setVolume(0, currentVolume);
     }
 
-    delay(30); // Shorter delay for more responsive control
+    delay(50); // Delay for more stable pot readings
 }
