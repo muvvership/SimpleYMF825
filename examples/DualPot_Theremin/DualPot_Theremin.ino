@@ -50,12 +50,12 @@ void loop()
     int potVolumeValue = analogRead(POT_VOLUME);
 
     // Add hysteresis - only process if pot moved significantly (reduces jitter)
-    const int HYSTERESIS = 5;
+    const int HYSTERESIS = 15;  // Larger hysteresis for fewer updates
     bool pitchChanged = (lastPotPitch == -1) || (abs(potPitchValue - lastPotPitch) > HYSTERESIS);
     bool volumeChanged = (lastPotVolume == -1) || (abs(potVolumeValue - lastPotVolume) > HYSTERESIS);
 
     if (!pitchChanged && !volumeChanged) {
-        delay(10);
+        delay(20);
         return;
     }
 
@@ -91,25 +91,27 @@ void loop()
         currentKey = newKey;
         currentVolume = newVolume;
         Serial.println("*** INIT: Starting note");
-        YMF825.setVolume(0, currentVolume);
-        YMF825.keyon(0, currentOctave, currentKey);
+        YMF825.keyon(0, currentOctave, currentKey, currentVolume);
+        return;
     }
 
-    // Update pitch if changed - use setKey to change pitch without restarting note
-    if (newOctave != currentOctave || newKey != currentKey) {
+    // Check if anything changed
+    bool pitchNeedsUpdate = (newOctave != currentOctave || newKey != currentKey);
+    bool volumeNeedsUpdate = (newVolume != currentVolume);
+
+    if (pitchNeedsUpdate || volumeNeedsUpdate) {
         currentOctave = newOctave;
         currentKey = newKey;
-
-        Serial.println("*** PITCH CHANGE");
-        YMF825.setKey(0, currentOctave, currentKey);
-    }
-
-    // Update volume if changed
-    if (newVolume != currentVolume) {
         currentVolume = newVolume;
-        Serial.println("*** VOLUME CHANGE");
-        YMF825.setVolume(0, currentVolume);
+
+        if (pitchNeedsUpdate) Serial.println("*** PITCH CHANGE");
+        if (volumeNeedsUpdate) Serial.println("*** VOLUME CHANGE");
+
+        // Restart note with new pitch and/or volume
+        YMF825.keyoff(0);
+        delay(30);  // Wait for keyoff to complete
+        YMF825.keyon(0, currentOctave, currentKey, currentVolume);
     }
 
-    delay(10);
+    delay(20);
 }

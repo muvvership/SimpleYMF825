@@ -49,15 +49,19 @@ void loop()
     if (currentPitch == -1) {
         currentPitch = newPitch;
         currentOctave = newOctave;
-        YMF825.keyon(0, currentOctave, currentPitch);
+        YMF825.keyon(0, currentOctave, currentPitch, 31);
+        return;
     }
 
-    // Update note if pitch or octave changed - use setKey to change smoothly
+    // Update note if pitch or octave changed
     if (newPitch != currentPitch || newOctave != currentOctave) {
         currentPitch = newPitch;
         currentOctave = newOctave;
 
-        YMF825.setKey(0, currentOctave, currentPitch);
+        // Restart note with new pitch
+        YMF825.keyoff(0);
+        delay(30);
+        YMF825.keyon(0, currentOctave, currentPitch, 31);
     }
 
     delay(50); // Small delay to debounce pot readings
