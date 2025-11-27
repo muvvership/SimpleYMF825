@@ -63,11 +63,11 @@ void loop()
     if (volumeChanged) lastPotVolume = potVolumeValue;
 
     // Map pitch pot to cover 3 octaves (36 semitones: 3 octaves × 12 notes)
-    // Octaves 2-4 (setKey range is 0-7, keyon range is 1-8)
+    // Octaves 3-5 (both setKey and keyon use range 1-8, despite what README says)
     int semitone = map(potPitchValue, 0, 1023, 0, 35); // 36 semitones (0-35)
 
-    // Calculate octave and key from semitone (using setKey's 0-7 octave range)
-    int newOctave = 2 + (semitone / 12);  // Octave 2, 3, or 4 (for setKey)
+    // Calculate octave and key from semitone
+    int newOctave = 3 + (semitone / 12);  // Octave 3, 4, or 5
     int newKey = semitone % 12;            // Key 0-11
 
     // Map volume pot to volume range
@@ -92,8 +92,7 @@ void loop()
         currentVolume = newVolume;
         Serial.println("*** INIT: Starting note");
         YMF825.setVolume(0, currentVolume);
-        // keyon uses octave range 1-8, so add 1 to our 0-7 octave value
-        YMF825.keyon(0, currentOctave + 1, currentKey);
+        YMF825.keyon(0, currentOctave, currentKey);
     }
 
     // Update pitch if changed - use setKey to change pitch without restarting note
