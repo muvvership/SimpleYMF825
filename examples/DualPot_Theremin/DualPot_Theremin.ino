@@ -91,19 +91,17 @@ void loop()
         currentKey = newKey;
         currentVolume = newVolume;
         Serial.println("*** INIT: Starting note");
-        YMF825.keyon(0, currentOctave, currentKey, currentVolume);
+        YMF825.setVolume(0, currentVolume);
+        YMF825.keyon(0, currentOctave, currentKey);
     }
 
-    // Update pitch if changed
+    // Update pitch if changed - use setKey to change pitch without restarting note
     if (newOctave != currentOctave || newKey != currentKey) {
         currentOctave = newOctave;
         currentKey = newKey;
 
         Serial.println("*** PITCH CHANGE");
-        // Restart the note with new pitch
-        YMF825.keyoff(0);
-        delay(20);
-        YMF825.keyon(0, currentOctave, currentKey, currentVolume);
+        YMF825.setKey(0, currentOctave, currentKey);
     }
 
     // Update volume if changed
