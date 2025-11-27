@@ -24,6 +24,8 @@ const int POT_VOLUME = A1;  // Potentiometer for volume control
 int currentOctave = -1;
 int currentKey = -1;
 int currentVolume = -1;
+int lastPotPitch = -1;
+int lastPotVolume = -1;
 
 void setup()
 {
@@ -46,6 +48,19 @@ void loop()
     // Read potentiometer values
     int potPitchValue = analogRead(POT_PITCH);
     int potVolumeValue = analogRead(POT_VOLUME);
+
+    // Add hysteresis - only process if pot moved significantly (reduces jitter)
+    const int HYSTERESIS = 5;
+    bool pitchChanged = (lastPotPitch == -1) || (abs(potPitchValue - lastPotPitch) > HYSTERESIS);
+    bool volumeChanged = (lastPotVolume == -1) || (abs(potVolumeValue - lastPotVolume) > HYSTERESIS);
+
+    if (!pitchChanged && !volumeChanged) {
+        delay(10);
+        return;
+    }
+
+    if (pitchChanged) lastPotPitch = potPitchValue;
+    if (volumeChanged) lastPotVolume = potVolumeValue;
 
     // Map pitch pot to cover 3 octaves (36 semitones: 3 octaves × 12 notes)
     // Octaves 3, 4, 5 for a good playable range
@@ -87,7 +102,7 @@ void loop()
         Serial.println("*** PITCH CHANGE");
         // Restart the note with new pitch
         YMF825.keyoff(0);
-        delay(10);
+        delay(20);
         YMF825.keyon(0, currentOctave, currentKey, currentVolume);
     }
 
@@ -98,5 +113,5 @@ void loop()
         YMF825.setVolume(0, currentVolume);
     }
 
-    delay(50); // Delay for more stable pot readings
+    delay(10);
 }
