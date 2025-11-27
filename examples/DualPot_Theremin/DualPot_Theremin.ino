@@ -27,6 +27,8 @@ int currentVolume = -1;
 
 void setup()
 {
+    Serial.begin(9600);
+
     YMF825.begin(IOVDD_5V);     // for 5V MCU
     //YMF825.begin(IOVDD_3V3); // for 3.3V MCU
 
@@ -35,6 +37,8 @@ void setup()
     YMF825.setMasterVolume(32);
 
     // Note: No pinMode needed for analog inputs
+
+    Serial.println("DualPot_Theremin started");
 }
 
 void loop()
@@ -54,11 +58,24 @@ void loop()
     // Map volume pot to volume range
     int newVolume = map(potVolumeValue, 0, 1023, 0, 31); // Volume 0-31
 
+    // Debug output
+    Serial.print("Pitch pot: ");
+    Serial.print(potPitchValue);
+    Serial.print(" -> Oct: ");
+    Serial.print(newOctave);
+    Serial.print(" Key: ");
+    Serial.print(newKey);
+    Serial.print(" | Vol pot: ");
+    Serial.print(potVolumeValue);
+    Serial.print(" -> Vol: ");
+    Serial.println(newVolume);
+
     // Initialize on first run
     if (currentOctave == -1) {
         currentOctave = newOctave;
         currentKey = newKey;
         currentVolume = newVolume;
+        Serial.println("*** INIT: Starting note");
         YMF825.keyon(0, currentOctave, currentKey, currentVolume);
     }
 
@@ -67,6 +84,7 @@ void loop()
         currentOctave = newOctave;
         currentKey = newKey;
 
+        Serial.println("*** PITCH CHANGE");
         // Restart the note with new pitch
         YMF825.keyoff(0);
         delay(10);
@@ -76,6 +94,7 @@ void loop()
     // Update volume if changed
     if (newVolume != currentVolume) {
         currentVolume = newVolume;
+        Serial.println("*** VOLUME CHANGE");
         YMF825.setVolume(0, currentVolume);
     }
 
