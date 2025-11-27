@@ -43,13 +43,14 @@ void loop()
 
     // Map pot values to ranges
     int newPitch = map(potPitchValue, 0, 1023, 0, 11);  // 12 notes (0-11)
-    int newOctave = map(potOctaveValue, 0, 1023, 1, 8); // Octaves 1-8
+    int newOctave = map(potOctaveValue, 0, 1023, 0, 7); // Octaves 0-7 (setKey range)
 
     // Initialize on first run
     if (currentPitch == -1) {
         currentPitch = newPitch;
         currentOctave = newOctave;
-        YMF825.keyon(0, currentOctave, currentPitch);
+        // keyon uses octave range 1-8, so add 1 to our 0-7 octave value
+        YMF825.keyon(0, currentOctave + 1, currentPitch);
     }
 
     // Update note if pitch or octave changed - use setKey to change smoothly
@@ -57,6 +58,7 @@ void loop()
         currentPitch = newPitch;
         currentOctave = newOctave;
 
+        // setKey uses octave range 0-7
         YMF825.setKey(0, currentOctave, currentPitch);
     }
 
